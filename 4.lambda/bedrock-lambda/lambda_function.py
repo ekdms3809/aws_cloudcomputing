@@ -36,7 +36,7 @@ def lambda_handler(event, context):
 
         # 2. converse API에 맞는 메시지 형식 구성
         # 시스템 프롬프트(역할 부여)와 사용자 메시지를 분리합니다.
-        system_prompt = "You are an expert in AWS. Based on the following data, suggest one AWS service that the user can additionally learn. Ensure the response is at least three sentences long and in Korean."
+        system_prompt = "당신은 서양 점성술 전문가입니다. 사용자의 생년월일과 성별을 바탕으로 별자리를 파악하고 오늘의 별자리 운세를 간단하게 핵심만 두줄로 분석해주세요.별자리 이름이나 제목 없이 바로 운세 내용만 두 문장으로 작성해주세요."
 
         messages = [{"role": "user", "content": [{"text": user_message}]}]
 

@@ -1,253 +1,236 @@
-// App.js
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import "./App.css";
 
-const SERVER_URL = process.env.REACT_APP_SERVER_URL;
+const GEMINI_URL = "https://3vhe3u5oiyvdfjgeug6sts3kfe0tdzdh.lambda-url.us-east-1.on.aws";
+const NOVA_URL = "https://zbgmju7ovmvjzkvdtgxuwbuxna0vxaig.lambda-url.us-east-1.on.aws";
+
+// [수정] 별자리 계산 함수
+function getZodiacSign(month, day) {
+  const signs = [
+    { name: "염소자리", start: [1, 1], end: [1, 19] },
+    { name: "물병자리", start: [1, 20], end: [2, 18] },
+    { name: "물고기자리", start: [2, 19], end: [3, 20] },
+    { name: "양자리", start: [3, 21], end: [4, 19] },
+    { name: "황소자리", start: [4, 20], end: [5, 20] },
+    { name: "쌍둥이자리", start: [5, 21], end: [6, 21] },
+    { name: "게자리", start: [6, 22], end: [7, 22] },
+    { name: "사자자리", start: [7, 23], end: [8, 22] },
+    { name: "처녀자리", start: [8, 23], end: [9, 22] },
+    { name: "천칭자리", start: [9, 23], end: [10, 22] },
+    { name: "전갈자리", start: [10, 23], end: [11, 21] },
+    { name: "사수자리", start: [11, 22], end: [12, 21] },
+    { name: "염소자리", start: [12, 22], end: [12, 31] },
+  ];
+  for (const s of signs) {
+    const afterStart = month > s.start[0] || (month === s.start[0] && day >= s.start[1]);
+    const beforeEnd = month < s.end[0] || (month === s.end[0] && day <= s.end[1]);
+    if (afterStart && beforeEnd) return s.name;
+  }
+  return "염소자리";
+}
+
+// [수정] 생년월일 유효성 검사 함수
+function isValidBirthDate(str) {
+  const match = str.match(/^(\d{4})-(\d{2})-(\d{2})$/);
+  if (!match) return false;
+  const [, y, m, d] = match.map(Number);
+  if (y < 1900 || y > 2100) return false;
+  if (m < 1 || m > 12) return false;
+  if (d < 1 || d > 31) return false;
+  return true;
+}
+
+// [수정] 생년월일 입력 자동 포맷 (YYYY-MM-DD)
+function formatBirthInput(value) {
+  const digits = value.replace(/\D/g, "").slice(0, 8);
+  if (digits.length <= 4) return digits;
+  if (digits.length <= 6) return digits.slice(0, 4) + "-" + digits.slice(4);
+  return digits.slice(0, 4) + "-" + digits.slice(4, 6) + "-" + digits.slice(6);
+}
 
 function App() {
-  const [notes, setNotes] = useState([]);
-  const [newNote, setNewNote] = useState("");
-  const [isLoading, setIsLoading] = useState(false);
-  const [aiRequestInProgress, setAiRequestInProgress] = useState({
-    id: null,
-    type: null,
-  });
+  const [birthDate, setBirthDate] = useState("");
+  const [gender, setGender] = useState("");
+  const [birthTime, setBirthTime] = useState("");
+  const [geminiResult, setGeminiResult] = useState(null);
+  const [novaResult, setNovaResult] = useState(null);
+  const [geminiLoading, setGeminiLoading] = useState(false);
+  const [novaLoading, setNovaLoading] = useState(false);
 
-  useEffect(() => {
-    fetchNotes();
-    const interval = setInterval(fetchNotes, 10000);
-    return () => clearInterval(interval);
-  }, []);
+  const isLoading = geminiLoading || novaLoading;
 
-  const fetchNotes = async () => {
-    try {
-      const response = await fetch(`${SERVER_URL}/notes`);
-
-      if (!response.ok) {
-        throw new Error(`서버 오류: ${response.status} ${response.statusText}`);
-      }
-
-      const data = await response.json();
-
-      // 데이터가 배열인지 확인
-      if (Array.isArray(data)) {
-        setNotes(data);
-      } else {
-        console.error("서버에서 배열이 아닌 데이터를 받았습니다:", data);
-        setNotes([]);
-      }
-    } catch (error) {
-      console.error("노트 조회 중 오류 발생:", error);
-      setNotes([]); // 오류 시 빈 배열로 설정
-    }
+  // [수정] 생년월일 키보드 입력 핸들러
+  const handleBirthChange = (e) => {
+    setBirthDate(formatBirthInput(e.target.value));
   };
 
-  const addNote = async () => {
-    if (!newNote.trim()) return;
-
-    setIsLoading(true);
+  const testGemini = async () => {
+    if (!birthDate || !gender) {
+      setGeminiResult("⚠️ 생년월일과 성별은 필수 입력입니다.");
+      return;
+    }
+    if (!isValidBirthDate(birthDate)) {
+      setGeminiResult("⚠️ 생년월일 형식이 올바르지 않습니다. (예: 1995-03-15)");
+      return;
+    }
+    setGeminiLoading(true);
+    setGeminiResult(null);
     try {
-      await fetch(`${SERVER_URL}/notes`, {
+      let prompt = `생년월일: ${birthDate}, 성별: ${gender}`;
+      if (birthTime) prompt += `, 태어난 시간: ${birthTime}`;
+      prompt += `\n당신은 사주명리학 전문가입니다. 사용자의 생년월일, 성별, 태어난 시간을 바탕으로 오늘의 사주 운세를 핵심만 간결하게 두줄로 분석해주세요. 한자를 사용하지 말고, 줄바꿈 없이 자연스러운 문장으로 작성해주세요.`;
+
+      const res = await fetch(GEMINI_URL, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ content: newNote }),
+        body: JSON.stringify({ content: prompt, noteId: 1 }),
       });
-      await fetchNotes();
-      setNewNote("");
-    } catch (error) {
-      console.error("노트 추가 중 오류 발생:", error);
+      const text = await res.text();
+      setGeminiResult(text.replace(/^"|"$/g, "").trim());
+    } catch (e) {
+      setGeminiResult("❌ 오류: " + e.message);
     } finally {
-      setIsLoading(false);
+      setGeminiLoading(false);
     }
   };
 
-  const deleteNote = async (id) => {
-    try {
-      await fetch(`${SERVER_URL}/notes/${id}`, { method: "DELETE" });
-      await fetchNotes();
-    } catch (error) {
-      console.error("노트 삭제 중 오류 발생:", error);
+  const testNova = async () => {
+    if (!birthDate) {
+      setNovaResult("⚠️ 생년월일은 필수 입력입니다.");
+      return;
     }
-  };
-
-  const deleteNotes = async () => {
-    if (!window.confirm("모든 기록을 삭제하시겠습니까?")) return;
-
-    try {
-      await fetch(`${SERVER_URL}/notes`, { method: "DELETE" });
-      await fetchNotes();
-    } catch (error) {
-      console.error("전체 노트 삭제 중 오류 발생:", error);
+    if (!isValidBirthDate(birthDate)) {
+      setNovaResult("⚠️ 생년월일 형식이 올바르지 않습니다. (예: 1995-03-15)");
+      return;
     }
-  };
-
-  // Gemini AI 조언 요청 함수 (기존 requestAIAdvice 대체)
-  const requestGeminiAdvice = async (userNote, noteId) => {
-    if (aiRequestInProgress.id) return;
-
-    setAiRequestInProgress({ id: noteId, type: "gemini" });
+    setNovaLoading(true);
+    setNovaResult(null);
     try {
-      const response = await fetch(`${SERVER_URL}/gemini-notes`, {
+      const [, m, d] = birthDate.split("-").map(Number);
+      const zodiac = getZodiacSign(m, d);
+      const prompt = `나의 별자리는 ${zodiac}입니다. 당신은 서양 점성술 전문가입니다. 별자리를 바탕으로 오늘의 운세를 핵심만 간결하게 두줄로 분석해주세요. 한자를 사용하지 말고, 줄바꿈 없이 자연스러운 문장으로 작성해주세요.`;
+
+      const res = await fetch(NOVA_URL, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          content: userNote,
-          noteId: noteId,
-        }),
+        body: JSON.stringify({ content: prompt, noteId: 1 }),
       });
-
-      if (!response.ok) {
-        throw new Error("Gemini 조언 요청 실패");
-      }
-
-      await fetchNotes();
-    } catch (error) {
-      console.error("Gemini 조언 요청 중 오류 발생:", error);
+      const text = await res.text();
+      setNovaResult(text);
+    } catch (e) {
+      setNovaResult("❌ 오류: " + e.message);
     } finally {
-      setAiRequestInProgress({ id: null, type: null });
-    }
-  };
-
-  // Nova AI 조언 요청 함수 (새로 추가)
-  const requestNovaAdvice = async (userNote, noteId) => {
-    if (aiRequestInProgress.id) return;
-
-    setAiRequestInProgress({ id: noteId, type: "nova" });
-    try {
-      const response = await fetch(`${SERVER_URL}/nova-notes`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          content: userNote,
-          noteId: noteId,
-        }),
-      });
-
-      if (!response.ok) {
-        throw new Error("Nova 조언 요청 실패");
-      }
-
-      await fetchNotes();
-    } catch (error) {
-      console.error("Nova 조언 요청 중 오류 발생:", error);
-    } finally {
-      setAiRequestInProgress({ id: null, type: null });
-    }
-  };
-
-  // AI 타입에 따른 아이콘과 텍스트 반환
-  const getAIDisplayInfo = (aiType) => {
-    switch (aiType) {
-      case "gemini":
-        return { icon: "🤖", label: "Gemini 추천 학습:" };
-      case "claude":
-        return { icon: "🌟", label: "Nova 추천 학습 서비스:" };
-      default:
-        return { icon: "🤖", label: "Gemini 추천 학습 서비스:" };
+      setNovaLoading(false);
     }
   };
 
   return (
     <div className="App">
       <div className="container">
-        <h1>학습 기록 애플리케이션</h1>
-        <h3>오늘 학습한 내용을 기록해보세요.</h3>
+        {/* [수정] 헤더 영역 */}
+        <div className="header">
+          <h1>🔮 오늘의 운세</h1>
+          <p className="subtitle">생년월일과 성별을 입력하고 운세를 확인하세요</p>
+        </div>
 
-        <div className="input-section">
-          <textarea
-            value={newNote}
-            onChange={(e) => setNewNote(e.target.value)}
-            placeholder="무엇을 공부하셨나요?"
-            className="note-input"
-          />
+        {/* [수정] 카드형 입력 폼 */}
+        <div className="card">
+          {/* [수정] 생년월일 - text 타입으로 키보드 직접 입력 */}
+          <div className="form-group">
+            <label className="form-label" htmlFor="birthDate">🎂 생년월일 *</label>
+            <input
+              id="birthDate"
+              type="text"
+              className="form-input"
+              placeholder="예: 1995-03-15"
+              maxLength={10}
+              value={birthDate}
+              onChange={handleBirthChange}
+              disabled={isLoading}
+            />
+          </div>
+
+          {/* [수정] 성별 - 토글 버튼 스타일 */}
+          <div className="form-group">
+            <label className="form-label">👤 성별 *</label>
+            <div className="gender-toggle">
+              <button
+                type="button"
+                className={`gender-btn ${gender === "남" ? "active male" : ""}`}
+                onClick={() => setGender("남")}
+                disabled={isLoading}
+              >
+                ♂ 남
+              </button>
+              <button
+                type="button"
+                className={`gender-btn ${gender === "여" ? "active female" : ""}`}
+                onClick={() => setGender("여")}
+                disabled={isLoading}
+              >
+                ♀ 여
+              </button>
+            </div>
+          </div>
+
+          {/* 태어난 시간 (선택) */}
+          <div className="form-group">
+            <label className="form-label" htmlFor="birthTime">🕐 태어난 시간 (선택)</label>
+            <input
+              id="birthTime"
+              type="time"
+              className="form-input"
+              value={birthTime}
+              onChange={(e) => setBirthTime(e.target.value)}
+              disabled={isLoading}
+            />
+          </div>
+
+          {/* [수정] 버튼 그룹 */}
           <div className="button-group">
             <button
-              onClick={addNote}
-              disabled={isLoading || !newNote.trim()}
-              className="primary-button"
+              className="action-btn gemini-btn"
+              onClick={testGemini}
+              disabled={isLoading}
             >
-              {isLoading ? "추가 중..." : "학습 기록 추가"}
+              {geminiLoading ? "분석 중..." : "🌙 Gemini 사주 운세"}
             </button>
-            <button onClick={deleteNotes} className="danger-button">
-              전체 기록 삭제
+            <button
+              className="action-btn nova-btn"
+              onClick={testNova}
+              disabled={isLoading}
+            >
+              {novaLoading ? "분석 중..." : "⭐ Nova 별자리 운세"}
             </button>
           </div>
         </div>
 
-        <h2>내 학습 기록</h2>
-        <div className="notes-container">
-          {Array.isArray(notes) && notes.length === 0 ? (
-            <p className="no-notes">아직 기록된 학습 내용이 없습니다.</p>
-          ) : (
-            Array.isArray(notes) &&
-            notes.map((note) => {
-              const aiInfo = getAIDisplayInfo(note.ai_type);
-              const isRequestingAI = aiRequestInProgress.id === note.id;
+        {/* [수정] 결과 영역 */}
+        {geminiLoading && (
+          <div className="result-card loading">
+            <div className="spinner" />
+            <span>Gemini가 사주를 분석하고 있습니다...</span>
+          </div>
+        )}
+        {geminiResult && (
+          <div className="result-card gemini-result">
+            <div className="result-title">🌙 Gemini 사주 운세</div>
+            <div className="result-body">{geminiResult}</div>
+          </div>
+        )}
 
-              return (
-                <div key={note.id} className="note">
-                  <div className="note-content">
-                    <strong>📝 학습 내용:</strong>
-                    <p>{note.user_note}</p>
-                  </div>
-
-                  {note.ai_note && (
-                    <div className="ai-note">
-                      <strong>
-                        {aiInfo.icon} {aiInfo.label}
-                      </strong>
-                      <p>{note.ai_note}</p>
-                    </div>
-                  )}
-
-                  <div className="note-actions">
-                    {!note.ai_note && !isRequestingAI && (
-                      <div className="ai-buttons">
-                        <button
-                          onClick={() =>
-                            requestGeminiAdvice(note.user_note, note.id)
-                          }
-                          className="secondary-button"
-                          disabled={aiRequestInProgress.id !== null}
-                        >
-                          Gemini 조언 요청
-                        </button>
-                        <button
-                          onClick={() =>
-                            requestNovaAdvice(note.user_note, note.id)
-                          }
-                          className="secondary-button"
-                          disabled={aiRequestInProgress.id !== null}
-                        >
-                          Nova 조언 요청
-                        </button>
-                      </div>
-                    )}
-
-                    {isRequestingAI && (
-                      <div className="loading-state">
-                        <span>
-                          {aiRequestInProgress.type === "gemini"
-                            ? "🤖 Gemini"
-                            : "🌟 Nova"}
-                          가 분석 중입니다...
-                        </span>
-                      </div>
-                    )}
-
-                    <button
-                      onClick={() => deleteNote(note.id)}
-                      className="danger-button"
-                      disabled={isRequestingAI}
-                    >
-                      삭제
-                    </button>
-                  </div>
-                </div>
-              );
-            })
-          )}
-        </div>
+        {novaLoading && (
+          <div className="result-card loading">
+            <div className="spinner" />
+            <span>Nova가 별자리 운세를 분석하고 있습니다...</span>
+          </div>
+        )}
+        {novaResult && (
+          <div className="result-card nova-result">
+            <div className="result-title">⭐ Nova 별자리 운세</div>
+            <div className="result-body">{novaResult}</div>
+          </div>
+        )}
       </div>
     </div>
   );

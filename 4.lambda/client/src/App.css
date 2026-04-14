@@ -1,369 +1,307 @@
 /* App.css */
+
+/* [수정] CSS 변수 */
 :root {
-  --primary-color: #4e54c8;
-  --primary-hover: #3a40a0;
-  --danger-color: #dc3545;
-  --danger-hover: #c82333;
-  --secondary-color: #6c757d;
-  --secondary-hover: #5a6268;
-  --background-gradient: linear-gradient(135deg, #4e54c8, #8b4ad3, #da4c9f);
-  --success-color: #28a745;
-  --success-hover: #218838;
-  --warning-color: #ffc107;
-  --warning-hover: #e0a800;
+  --bg-gradient: linear-gradient(135deg, #0f0c29, #302b63, #24243e);
+  --card-bg: rgba(255, 255, 255, 0.07);
+  --card-border: rgba(255, 255, 255, 0.12);
+  --glass-blur: blur(16px);
+  --accent-purple: #a78bfa;
+  --accent-pink: #f472b6;
+  --accent-gold: #fbbf24;
+  --text-primary: #f1f5f9;
+  --text-secondary: rgba(255, 255, 255, 0.65);
+  --input-bg: rgba(255, 255, 255, 0.08);
+  --input-focus: rgba(167, 139, 250, 0.4);
+  --radius: 16px;
+  --radius-sm: 10px;
+}
+
+* {
+  box-sizing: border-box;
 }
 
 body {
   margin: 0;
   padding: 0;
-  font-family: 'Arial', sans-serif;
-  background: var(--background-gradient);
+  font-family: 'Pretendard', 'Apple SD Gothic Neo', 'Noto Sans KR', sans-serif;
+  background: var(--bg-gradient);
   min-height: 100vh;
-  color: white;
+  color: var(--text-primary);
 }
 
+/* [수정] 전체 앱 가운데 정렬 */
 .App {
   min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   padding: 40px 20px;
 }
 
+/* [수정] 컨테이너 가운데 정렬 + 최대 너비 */
 .container {
-  max-width: 800px;
-  margin: 0 auto;
-}
-
-h1 {
-  font-size: 2.5em;
-  margin-bottom: 15px;
-  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
-  text-align: center;
-}
-
-h2 {
-  font-size: 2em;
-  margin-top: 40px;
-  margin-bottom: 20px;
-  text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.3);
-}
-
-h3 {
-  font-size: 1.2em;
-  text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.2);
-  margin-bottom: 30px;
-  text-align: center;
-  opacity: 0.9;
-}
-
-.input-section {
-  background: rgba(255, 255, 255, 0.1);
-  padding: 25px;
-  border-radius: 15px;
-  backdrop-filter: blur(10px);
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  margin-bottom: 30px;
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
-}
-
-.note-input {
   width: 100%;
-  height: 120px;
-  padding: 15px;
-  border-radius: 10px;
-  border: 2px solid rgba(255, 255, 255, 0.2);
-  background: rgba(255, 255, 255, 0.9);
+  max-width: 520px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+/* [수정] 헤더 */
+.header {
+  text-align: center;
+  margin-bottom: 32px;
+}
+
+.header h1 {
+  font-size: 2.4em;
+  margin: 0 0 8px 0;
+  background: linear-gradient(135deg, var(--accent-purple), var(--accent-pink));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  filter: drop-shadow(0 2px 8px rgba(167, 139, 250, 0.3));
+}
+
+.subtitle {
+  margin: 0;
+  font-size: 1em;
+  color: var(--text-secondary);
+  letter-spacing: 0.02em;
+}
+
+/* [수정] 카드 (글래스모피즘) */
+.card {
+  width: 100%;
+  background: var(--card-bg);
+  border: 1px solid var(--card-border);
+  border-radius: var(--radius);
+  backdrop-filter: var(--glass-blur);
+  -webkit-backdrop-filter: var(--glass-blur);
+  padding: 32px 28px;
+  margin-bottom: 24px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.25);
+}
+
+/* [수정] 폼 그룹 */
+.form-group {
+  margin-bottom: 22px;
+}
+
+.form-label {
+  display: block;
+  margin-bottom: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-secondary);
+  letter-spacing: 0.03em;
+}
+
+/* [수정] 인풋 스타일 (text, time 공용) */
+.form-input {
+  width: 100%;
+  padding: 14px 16px;
+  border-radius: var(--radius-sm);
+  border: 1.5px solid var(--card-border);
+  background: var(--input-bg);
   font-size: 16px;
-  margin-bottom: 20px;
-  box-sizing: border-box;
-  transition: all 0.3s ease;
-  resize: vertical;
-  color: #333;
-}
-
-.note-input:focus {
+  color: var(--text-primary);
+  transition: all 0.25s ease;
   outline: none;
-  border-color: var(--primary-color);
-  box-shadow: 0 0 10px rgba(78, 84, 200, 0.3);
 }
 
-.note-input:disabled {
-  opacity: 0.7;
+.form-input::placeholder {
+  color: rgba(255, 255, 255, 0.3);
+}
+
+.form-input:focus {
+  border-color: var(--accent-purple);
+  box-shadow: 0 0 0 3px var(--input-focus);
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.form-input:disabled {
+  opacity: 0.5;
   cursor: not-allowed;
 }
 
+/* [수정] 성별 토글 버튼 */
+.gender-toggle {
+  display: flex;
+  gap: 12px;
+}
+
+.gender-btn {
+  flex: 1;
+  padding: 12px 0;
+  border-radius: var(--radius-sm);
+  border: 1.5px solid var(--card-border);
+  background: var(--input-bg);
+  color: var(--text-secondary);
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.25s ease;
+}
+
+.gender-btn:hover:not(:disabled) {
+  background: rgba(255, 255, 255, 0.12);
+  border-color: rgba(255, 255, 255, 0.25);
+}
+
+.gender-btn.active.male {
+  background: rgba(96, 165, 250, 0.2);
+  border-color: #60a5fa;
+  color: #93c5fd;
+  box-shadow: 0 0 12px rgba(96, 165, 250, 0.15);
+}
+
+.gender-btn.active.female {
+  background: rgba(244, 114, 182, 0.2);
+  border-color: #f472b6;
+  color: #f9a8d4;
+  box-shadow: 0 0 12px rgba(244, 114, 182, 0.15);
+}
+
+.gender-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* [수정] 액션 버튼 */
 .button-group {
   display: flex;
-  gap: 15px;
-  justify-content: center;
-  flex-wrap: wrap;
+  gap: 12px;
+  margin-top: 8px;
 }
 
-button {
-  font-size: 16px;
-  border-radius: 8px;
+.action-btn {
+  flex: 1;
+  padding: 14px 0;
   border: none;
+  border-radius: var(--radius-sm);
+  font-size: 15px;
+  font-weight: 700;
   cursor: pointer;
   transition: all 0.3s ease;
-  font-weight: 600;
-  white-space: nowrap;
+  letter-spacing: 0.02em;
 }
 
-button:disabled {
-  opacity: 0.7;
+.action-btn:disabled {
+  opacity: 0.5;
   cursor: not-allowed;
   transform: none !important;
 }
 
-.primary-button,
-.danger-button {
-  padding: 12px 24px;
-  border-radius: 8px;
-  font-size: 16px;
-  font-weight: 600;
-  transition: all 0.3s ease;
-  min-width: 120px;
+.gemini-btn {
+  background: linear-gradient(135deg, #6366f1, #8b5cf6);
+  color: #e0e7ff;
+  box-shadow: 0 4px 16px rgba(99, 102, 241, 0.3);
 }
 
-.primary-button {
-  background: #ffffff;
-  color: var(--primary-color);
-}
-
-.primary-button:hover:not(:disabled) {
+.gemini-btn:hover:not(:disabled) {
   transform: translateY(-2px);
-  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
-  background: #f8f9fa;
+  box-shadow: 0 6px 24px rgba(99, 102, 241, 0.45);
 }
 
-.button-group .danger-button {
-  background: var(--danger-color);
-  color: white;
-  width: auto;
+.nova-btn {
+  background: linear-gradient(135deg, #f59e0b, #ef4444);
+  color: #fef3c7;
+  box-shadow: 0 4px 16px rgba(245, 158, 11, 0.3);
 }
 
-.button-group .danger-button:hover:not(:disabled) {
-  background: var(--danger-hover);
+.nova-btn:hover:not(:disabled) {
   transform: translateY(-2px);
-  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+  box-shadow: 0 6px 24px rgba(245, 158, 11, 0.45);
 }
 
-.secondary-button {
-  background: rgba(255, 255, 255, 0.9);
-  color: var(--secondary-color);
-  padding: 10px 16px;
-  font-size: 14px;
-  min-width: 140px;
-  border-radius: 6px;
+/* [수정] 결과 카드 */
+.result-card {
+  width: 100%;
+  background: var(--card-bg);
+  border: 1px solid var(--card-border);
+  border-radius: var(--radius);
+  backdrop-filter: var(--glass-blur);
+  -webkit-backdrop-filter: var(--glass-blur);
+  padding: 24px;
+  margin-bottom: 16px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+  animation: fadeIn 0.4s ease;
 }
 
-.secondary-button:hover:not(:disabled) {
-  transform: translateY(-2px);
-  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
-  background: rgba(255, 255, 255, 1);
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(12px); }
+  to { opacity: 1; transform: translateY(0); }
 }
 
-.notes-container {
-  display: flex;
-  flex-direction: column;
-  gap: 20px;
-}
-
-.note {
-  background: rgba(255, 255, 255, 0.1);
-  padding: 20px;
-  border-radius: 12px;
-  backdrop-filter: blur(10px);
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-  transition: transform 0.3s ease;
-}
-
-.note:hover {
-  transform: translateY(-2px);
-}
-
-.note-content {
-  margin-bottom: 15px;
-}
-
-.note-content strong {
-  display: block;
-  margin-bottom: 8px;
-  font-size: 16px;
-}
-
-.note-content p {
-  margin: 0;
-  line-height: 1.6;
-  font-size: 15px;
-  background: rgba(255, 255, 255, 0.1);
-  padding: 12px;
-  border-radius: 8px;
-  border-left: 4px solid rgba(255, 255, 255, 0.3);
-}
-
-.ai-note {
-  margin-bottom: 20px;
-  background: rgba(162, 111, 219, 0.3);
-  padding: 15px;
-  border-radius: 10px;
-  border-left: 4px solid #a26fdb;
-}
-
-.ai-note strong {
-  display: block;
-  margin-bottom: 8px;
-  font-size: 16px;
-  color: white;
-}
-
-.ai-note p {
-  margin: 0;
-  line-height: 1.6;
-  font-size: 15px;
-}
-
-.note-actions {
-  display: flex;
-  gap: 10px;
-  margin-top: 20px;
-  flex-wrap: wrap;
-  align-items: center;
-}
-
-.ai-buttons {
-  display: flex;
-  gap: 10px;
-  flex-wrap: wrap;
-  flex: 1;
-}
-
-.note-actions .danger-button {
-  background: var(--danger-color);
-  color: white;
-  padding: 8px 16px;
-  font-size: 14px;
-  margin-left: auto;
-}
-
-.note-actions .danger-button:hover:not(:disabled) {
-  background: var(--danger-hover);
-  transform: translateY(-2px);
-  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
-}
-
-.loading-state {
+.result-card.loading {
   display: flex;
   align-items: center;
-  gap: 10px;
-  padding: 8px 16px;
-  background: rgba(255, 255, 255, 0.1);
-  border-radius: 6px;
+  gap: 14px;
+  color: var(--text-secondary);
   font-size: 14px;
-  animation: pulse 2s infinite;
 }
 
-@keyframes pulse {
-  0% {
-    opacity: 1;
-  }
-  50% {
-    opacity: 0.7;
-  }
-  100% {
-    opacity: 1;
-  }
+/* [수정] 로딩 스피너 */
+.spinner {
+  width: 20px;
+  height: 20px;
+  border: 2.5px solid rgba(255, 255, 255, 0.15);
+  border-top-color: var(--accent-purple);
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+  flex-shrink: 0;
 }
 
-.no-notes {
-  text-align: center;
-  font-style: italic;
-  color: rgba(255, 255, 255, 0.8);
-  padding: 40px 20px;
-  background: rgba(255, 255, 255, 0.05);
-  border-radius: 10px;
-  border: 2px dashed rgba(255, 255, 255, 0.2);
+@keyframes spin {
+  to { transform: rotate(360deg); }
 }
 
-/* 반응형 디자인 */
-@media (max-width: 768px) {
+.result-title {
+  font-size: 16px;
+  font-weight: 700;
+  margin-bottom: 12px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid var(--card-border);
+}
+
+.gemini-result .result-title {
+  color: var(--accent-purple);
+}
+
+.nova-result .result-title {
+  color: var(--accent-gold);
+}
+
+.result-body {
+  font-size: 15px;
+  line-height: 1.75;
+  color: var(--text-secondary);
+  white-space: pre-wrap;
+  word-break: keep-all;
+}
+
+/* 반응형 */
+@media (max-width: 580px) {
   .App {
-    padding: 20px 15px;
+    padding: 24px 16px;
+    align-items: flex-start;
   }
 
-  h1 {
-    font-size: 2em;
+  .header h1 {
+    font-size: 1.9em;
   }
 
-  h2 {
-    font-size: 1.5em;
-  }
-
-  .container {
-    max-width: 100%;
-  }
-
-  .input-section {
-    padding: 20px;
+  .card {
+    padding: 24px 20px;
   }
 
   .button-group {
     flex-direction: column;
-    align-items: center;
   }
 
-  .button-group button {
-    width: 100%;
-    max-width: 300px;
-  }
-
-  .note {
-    padding: 15px;
-  }
-
-  .note-actions {
-    flex-direction: column;
-    gap: 15px;
-  }
-
-  .ai-buttons {
-    width: 100%;
-  }
-
-  .ai-buttons button {
-    flex: 1;
-    min-width: 0;
-  }
-
-  .note-actions .danger-button {
-    width: 100%;
-    margin-left: 0;
-  }
-}
-
-@media (max-width: 480px) {
-  .App {
-    padding: 15px 10px;
-  }
-
-  h1 {
-    font-size: 1.8em;
-  }
-
-  h3 {
-    font-size: 1.1em;
-  }
-
-  .note-input {
-    height: 100px;
-    padding: 12px;
-  }
-
-  .ai-buttons {
-    flex-direction: column;
-  }
-
-  .secondary-button {
-    min-width: 0;
+  .action-btn {
     width: 100%;
   }
 }

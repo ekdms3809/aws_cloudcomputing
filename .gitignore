@@ -145,3 +145,5 @@ build/
 
 # Lock files
 package-lock.json
+.env
+node_modules/
